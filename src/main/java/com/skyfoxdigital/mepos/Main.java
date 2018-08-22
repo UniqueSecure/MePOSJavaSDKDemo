@@ -1,15 +1,18 @@
 package com.skyfoxdigital.mepos;
 	
+import com.uniquesecure.meposconnect.MePOS;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 
 
 public class Main extends Application {
+	
+	static MePOS mepos;
 	
 	public static void main(String[] args) {
 		launch(args);
@@ -38,6 +41,6 @@ public class Main extends Application {
 	@Override
 	public void stop() {
 	
-		
+		if (mepos != null) mepos.getConnectionManager().disconnect();
 	}
 }

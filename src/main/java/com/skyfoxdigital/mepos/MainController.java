@@ -7,7 +7,9 @@ import com.uniquesecure.meposconnect.MePOS;
 import com.uniquesecure.meposconnect.MePOSConnectionType;
 import com.uniquesecure.meposconnect.MePOSException;
 import com.uniquesecure.meposconnect.MePOSPrinterCallback;
+import com.uniquesecure.meposconnect.log.MePOSLogger;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -17,7 +19,6 @@ import javafx.scene.control.TextField;
 public class MainController {
 	
 	private final Pattern IP_PATTERN = Pattern.compile("^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
-	private MePOS mepos;
 	
 	@FXML private RadioButton radUSB, radWiFi;
 	@FXML private TextField txtIP;
@@ -56,13 +57,13 @@ public class MainController {
 		String type = "";
 		if (radUSB.isSelected()) {
 
-			mepos = new MePOS(MePOSConnectionType.USB);
+			Main.mepos = new MePOS(MePOSConnectionType.USB, MePOSLogger.LOG_LEVEL.LEVEL_TRACE);
 			type = "USB";
 		} else if (radWiFi.isSelected()) {
 
 			if (!validateIP()) return;
-			mepos = new MePOS(MePOSConnectionType.WIFI);
-			mepos.getConnectionManager().setConnectionIPAddress(txtIP.getText());
+			Main.mepos = new MePOS(MePOSConnectionType.WIFI, MePOSLogger.LOG_LEVEL.LEVEL_TRACE);
+			Main.mepos.getConnectionManager().setConnectionIPAddress(txtIP.getText());
 			type = "WIFI";
 		} else {
 			
@@ -70,7 +71,7 @@ public class MainController {
 			assert false : "This should not happen ever";
 		}
 		
-		if (mepos.isMePOSConnected()) {
+		if (Main.mepos.isMePOSConnected()) {
 
 			lblStatus.setText("MePOS ready");
 			btnPrint.setDisable(false);
@@ -97,25 +98,25 @@ public class MainController {
 	@FXML
 	private void printReciept() {
 
-		assert mepos != null : "Should not be able to enter here without a proper instance";
+		assert Main.mepos != null : "Should not be able to enter here without a proper instance";
 		
 		try {
 			
-			mepos.print(new TestReceipt(), new MePOSPrinterCallback() {
+			Main.mepos.print(new TestReceipt(), new MePOSPrinterCallback() {
 				
 				@Override
 				public void onPrinterStarted(MePOSConnectionType type, String ipAddress) {
-					lblStatus.setText("Printing started...");
 				}
 				
 				@Override
 				public void onPrinterError(MePOSException exception) {
-					lblStatus.setText(String.format("Error printing. %s", exception.getMessage()));
 				}
 				
 				@Override
 				public void onPrinterCompleted(MePOSConnectionType type, String ipAddress) {
-					lblStatus.setText("Printing finished");
+					Platform.runLater(() -> {
+						lblStatus.setText("Printing finished");
+					});
 					
 				}
 			});
@@ -127,11 +128,11 @@ public class MainController {
 	@FXML
 	private void openCashDrawer() {
 		
-		assert mepos != null : "Should not be able to enter here without a proper instance";
+		assert Main.mepos != null : "Should not be able to enter here without a proper instance";
 		
 		try {
 			
-			mepos.openCashDrawer(true);
+			Main.mepos.openCashDrawer(true);
 			lblStatus.setText("Cash drawer opened");
 		} catch (Exception e) {
 			lblStatus.setText(String.format("Unable to print test receipt. %s", e.getMessage()));

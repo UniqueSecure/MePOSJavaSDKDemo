@@ -1,9 +1,17 @@
 package com.skyfoxdigital.mepos.helpers;
 
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
+
+import javax.imageio.ImageIO;
+
 import com.uniquesecure.meposconnect.MePOS;
 import com.uniquesecure.meposconnect.MePOSReceipt;
 import com.uniquesecure.meposconnect.MePOSReceiptBarcodeLine;
 import com.uniquesecure.meposconnect.MePOSReceiptFeedLine;
+import com.uniquesecure.meposconnect.MePOSReceiptImageLine;
 import com.uniquesecure.meposconnect.MePOSReceiptSingleCharLine;
 import com.uniquesecure.meposconnect.MePOSReceiptTextLine;
 
@@ -35,7 +43,17 @@ public class TestReceipt extends MePOSReceipt {
         this.addLine(new MePOSReceiptFeedLine(2));
 
         this.addLine(new MePOSReceiptSingleCharLine('-'));
-        this.addLine(new MePOSReceiptSingleCharLine('-'));
+        
+        BufferedImage img = null;
+
+        try {
+            img = ImageIO.read(new File("ic_mepos.bmp"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+        this.addLine(new MePOSReceiptImageLine(img));
+        
         this.addLine(new MePOSReceiptSingleCharLine('-'));
 
         this.addLine(new MePOSReceiptTextLine("- Three single character lines ", MePOS.TEXT_STYLE_NONE, MePOS.TEXT_SIZE_NORMAL, MePOS.TEXT_POSITION_LEFT));
